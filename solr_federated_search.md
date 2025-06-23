@@ -210,7 +210,7 @@ and the json is like the following
 ```
 
 ### Query the docs
-Let’s say you want to retrieve all documents that contain the word “scientist”. You can do this by sending a request to the following URL: '<SOLR_URL>/solr/amazingCore/query?q=scientist' You can either `curl` this URL or open it directly in your browser. By default, Solr returns the response in JSON format. If you prefer the output in XML, simply add the wt=xml (writer type) parameter like so: '<SOLR_URL>/solr/amazingCore/query?q=scientist&wt=xml'. 
+Let’s say you want to retrieve all documents that contain the word “scientist”. You can do this by sending a request to the following URL: `<SOLR_URL>/solr/amazingCore/query?q=scientist` You can either `curl` this URL or open it directly in your browser. By default, Solr returns the response in JSON format. If you prefer the output in XML, simply add the wt=xml (writer type) parameter like so: `<SOLR_URL>/solr/amazingCore/query?q=scientist&wt=xml`. 
 
 Now, Salesforce **Federated Search** to work properly expects as input an XML Atom with the OpenSearch specs/constraints (reference [one](https://help.salesforce.com/s/articleView?id=ai.search_configure_solr_federated_search.htm&type=5) and [two](https://developer.salesforce.com/docs/atlas.en-us.federated_search.meta/federated_search/federated_search_intro.htm)). Therefore, we have to enable the `xslt` query response writer and to configure it. The steps are:
 + modify the `solrconfig.xml` file in `data/amazingCore/conf/solrconfig.xml` adding the following lines
@@ -316,27 +316,32 @@ Now, Salesforce **Federated Search** to work properly expects as input an XML At
     ```
 now by querying <SOLR_URL>/solr/amazingCore/query?q=scientist&wt=xsl&tr=atom.xsl the output is the one expected by Salesforce. In the specific case,:
 ```xml
-<feed xmlns:sfdc="http://salesforce.com/2016/federatedsearch/1.0" xmlns="http://www.w3.org/2005/Atom">
-<title>emailmessage</title>
-<opensearch:totalResults xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">1</opensearch:totalResults>
-<opensearch:startIndex xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">0</opensearch:startIndex>
-<opensearch:itemsPerPage xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/"/>
-<opensearch:Query xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" role="request" searchTerms="scientist" startIndex="0" count="1"/>
-<entry>
-<title>Congress dog determine relate admit win trade.</title>
-<recordType name="emailmessage"/>
-<id>b3249981-0b44-4ca2-9e94-1fb083b99d30</id>
-<link href="https://www.example.com"/>
-<updated>2024-09-14T23:16:18Z</updated>
-<summary>Congress dog determine relate admit win trade.</summary>
-<sfdc:recordType>emailmessage</sfdc:recordType>
-<sfdc:sender>james70@example.net</sfdc:sender>
-<sfdc:receivers>josecox@example.netbbarber@example.netallisonbrown@example.netjames04@example.comchristopher44@example.org</sfdc:receivers>
-<sfdc:subject>Congress dog determine relate admit win trade.</sfdc:subject>
-<sfdc:body>Speak record drop scientist full current. Ground find policy action heavy gas. Perform whole memory traditional word listen culture. Lay commercial road drive school popular week. Wear country practice.</sfdc:body>
-<sfdc:emaildate>2024-09-14T23:16:18Z</sfdc:emaildate>
-<sfdc:tags>reflecttreewearcareerdiscover</sfdc:tags>
-</entry>
+<feed xmlns:sfdc="http://salesforce.com/2016/federatedsearch/1.0"
+    xmlns="http://www.w3.org/2005/Atom">
+    <title>emailmessage</title>
+    <opensearch:totalResults xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">1</opensearch:totalResults>
+    <opensearch:startIndex xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">0</opensearch:startIndex>
+    <opensearch:itemsPerPage xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" />
+    <opensearch:Query xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" role="request"
+        searchTerms="scientist" startIndex="0" count="1" />
+    <entry>
+        <title>Congress dog determine relate admit win trade.</title>
+        <recordType name="emailmessage" />
+        <id>b3249981-0b44-4ca2-9e94-1fb083b99d30</id>
+        <link href="https://www.example.com" />
+        <updated>2024-09-14T23:16:18Z</updated>
+        <summary>Congress dog determine relate admit win trade.</summary>
+        <sfdc:recordType>emailmessage</sfdc:recordType>
+        <sfdc:sender>james70@example.net</sfdc:sender>
+        <sfdc:receivers>
+            josecox@example.netbbarber@example.netallisonbrown@example.netjames04@example.comchristopher44@example.org</sfdc:receivers>
+        <sfdc:subject>Congress dog determine relate admit win trade.</sfdc:subject>
+        <sfdc:body>Speak record drop scientist full current. Ground find policy action heavy gas.
+            Perform whole memory traditional word listen culture. Lay commercial road drive school
+            popular week. Wear country practice.</sfdc:body>
+        <sfdc:emaildate>2024-09-14T23:16:18Z</sfdc:emaildate>
+        <sfdc:tags>reflecttreewearcareerdiscover</sfdc:tags>
+    </entry>
 </feed>
 ```
 ## OpenSearch Description
@@ -366,7 +371,7 @@ According to Salesforce documentation, [reference one](https://developer.salesfo
 </OpenSearchDescription>
 ```
 **Warning:**
-    There’s an important detail we learned the hard way — setting indexOffset='0' is crucial. If omitted, OpenSearch defaults to one-based indexing, which causes it to skip the first document.
+    There’s an important detail we learned the hard way — setting `indexOffset='0'` is crucial. If omitted, OpenSearch defaults to one-based indexing, which causes it to skip the first document.
 ## SalesForce
 We are now ready to set up the Salesforce External Data Source using Federated Search (OpenSearch). The steps are explained in the [official documentation](https://help.salesforce.com/s/articleView?id=ai.search_define_federated_search.htm&type=5), but keep the following key points in mind:
 + For the OpenSearch Description URL, make sure to provide the URL of the OpenSearch Description XML file—not the Solr endpoint itself.
