@@ -41,7 +41,7 @@ services:
     environment:
       - SOLR_MODULES=scripting
 ```
-Once you have Apache Solr up and running, take some time to familiarize yourself with the Solr Dashboard - available at [http://localhost:8983](http://localhost:8983) if you are running it locally, or at [http://<some_ip>:8983](http://<some_ip>:8983) if you are deploying it remotly. From this point forward, we will refer to this base URL as <SOLR_URL>. 
+Once you have Apache Solr up and running, take some time to familiarize yourself with the Solr Dashboard - available at [http://localhost:8983](http://localhost:8983) if you are running it locally, or at [http://<some_ip>:8983](http://<some_ip>:8983) if you are deploying it remotly. From this point forward, we will refer to this base URL as `<SOLR_URL>`. 
 
 You should also explore the Solr API and the command-line interface. For a helpful introduction, consider followign the official [Solr tutorial](https://solr.apache.org/guide/solr/latest/getting-started/solr-tutorial.html)).
 ## Your data in Apache Solr
@@ -314,7 +314,7 @@ Now, Salesforce **Federated Search** to work properly expects as input an XML At
         </xsl:template>
     </xsl:stylesheet>
     ```
-now by querying <SOLR_URL>/solr/amazingCore/query?q=scientist&wt=xsl&tr=atom.xsl the output is the one expected by Salesforce. In the specific case,:
+now by querying `<SOLR_URL>/solr/amazingCore/query?q=scientist&wt=xsl&tr=atom.xsl` the output is the one expected by Salesforce. In the specific case,:
 ```xml
 <feed xmlns:sfdc="http://salesforce.com/2016/federatedsearch/1.0"
     xmlns="http://www.w3.org/2005/Atom">
