@@ -1,5 +1,9 @@
 # What is this repo?
-A collection of real-world lessons, examples, and practical insights from our journey adopting Salesforce — covering everything from system integration (like Apache Solr and Federated Search) to configuration patterns, custom development, and process design. Born from an open-source background, this collaborative effort aims to bridge the gap between open-source thinking and the not always clear Salesforce documentation and ecosystem.
+A collection of real-world lessons, examples, and practical insights from our ongoing experience adopting Salesforce. It highlights the most valuable—and often unconventional—challenges we’ve encountered, ranging from system integration (like implementing Salesforce Federated Search with Apache Solr) to configuration patterns, custom development, and process design.
+
+Born from an open-source background, our goal is to provide a hands-on, example-driven walkthrough of the entire journey—a resource we wish had existed when we began.
+
+This is a living document, and we welcome feedback and suggestions to help us continue improving it.
 
 # Topic
 

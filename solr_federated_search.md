@@ -1,4 +1,11 @@
+## The Business Use Case
+Our challenge was to log thousands of relevant email messages per day in Salesforce—without exhausting its limited and valuable storage. As a first option, we turned to Salesforce Federated Search, which is [included (i.e., already covered by the license) in the Enterprise, Professional, Unlimited, and Developer Editions](https://help.salesforce.com/s/articleView?id=platform.external_data_source_define.htm&type=5).
+
+Federated Search allows us to create an external object backed by a database (in our case Apache Solr) exposed through the [**OpenSearch** protocol](https://github.com/dewitt/opensearch). However, it comes with some [limitations](https://help.salesforce.com/s/articleView?id=ai.search_federated_considerations.htm&type=5) stricter than those applied to Salesforce Connect adapters. One key constraint is that 
+> Federated Search supports only external lookup relationships, where the external object must always be the parent in the relationship.
+
 ## Introduction
+
 The goal of this guide is to enable querying external data hosted in **Apache Solr** using the **OpenSearch** protocol, specifically to integrate with **Salesforce Federated Search** (available in: Enterprise, Professional, Unlimited, and Developer Editions). While this integration is entirely possible, we were surprised—especially as members of the open-source community—by how scarce comprehensive, end-to-end resources are on the topic.
 
 From deploying an Apache Solr server, to configuring the schema, exposing a compliant OpenSearch description, and even writing the required XSL transformation file, the journey involves several steps that are often only partially documented or scattered across different sources.
@@ -43,7 +50,7 @@ services:
 ```
 Once you have Apache Solr up and running, take some time to familiarize yourself with the Solr Dashboard - available at [http://localhost:8983](http://localhost:8983) if you are running it locally, or at [http://<some_ip>:8983](http://<some_ip>:8983) if you are deploying it remotly. From this point forward, we will refer to this base URL as `<SOLR_URL>`. 
 
-You should also explore the Solr API and the command-line interface. For a helpful introduction, consider followign the official [Solr tutorial](https://solr.apache.org/guide/solr/latest/getting-started/solr-tutorial.html)).
+You should also explore the Solr API and the command-line interface. For a helpful introduction, consider followign the official [Solr tutorial](https://solr.apache.org/guide/solr/latest/getting-started/solr-tutorial.html).
 ## Your data in Apache Solr
 ### Create a Core
 Let’s say you want to create a core called `amazingCore`. Inside the container, run the following command:
@@ -314,7 +321,7 @@ Now, Salesforce **Federated Search** to work properly expects as input an XML At
         </xsl:template>
     </xsl:stylesheet>
     ```
-now by querying `<SOLR_URL>/solr/amazingCore/query?q=scientist&wt=xsl&tr=atom.xsl` the output is the one expected by Salesforce. In the specific case,:
+now by querying `<SOLR_URL>/solr/amazingCore/query?q=scientist&wt=xsl&tr=atom.xsl` the output is the one expected by Salesforce. In the specific case:
 ```xml
 <feed xmlns:sfdc="http://salesforce.com/2016/federatedsearch/1.0"
     xmlns="http://www.w3.org/2005/Atom">
