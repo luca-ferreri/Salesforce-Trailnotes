@@ -7,6 +7,6 @@ This is a living document, and we welcome feedback and suggestions to help us co
 
 # Topic
 
-- [Salesforce Federated Search (with OpenSearch protocol) to query Apache Solr ](solr_federated_search.md)
+- [Salesforce Federated Search (with OpenSearch protocol) to query Apache Solr](solr_federated_search.md)
 - [Salesforce Connect adapter for GraphQL](graphQL.md) **coming soon**
 - ...

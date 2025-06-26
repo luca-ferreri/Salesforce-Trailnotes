@@ -1,25 +1,20 @@
+# Salesforce Federated Search (with OpenSearch protocol) to query Apache Solr
 ## The Business Use Case
-Our challenge was to log thousands of relevant email messages per day in Salesforce—without exhausting its limited and valuable storage. As a first option, we turned to Salesforce Federated Search, which is [included (i.e., already covered by the license) in the Enterprise, Professional, Unlimited, and Developer Editions](https://help.salesforce.com/s/articleView?id=platform.external_data_source_define.htm&type=5).
+Our challenge was to log thousands of relevant email messages per day in Salesforce — without exhausting its limited and valuable storage. As a first option, we turned to Salesforce Federated Search, which is [included (i.e., already covered by the license) in the Enterprise, Professional, Unlimited, and Developer Editions](https://help.salesforce.com/s/articleView?id=platform.external_data_source_define.htm&type=5).
 
 Federated Search allows us to create an external object backed by a database (in our case Apache Solr) exposed through the [**OpenSearch** protocol](https://github.com/dewitt/opensearch). However, it comes with some [limitations](https://help.salesforce.com/s/articleView?id=ai.search_federated_considerations.htm&type=5) stricter than those applied to Salesforce Connect adapters. One key constraint is that 
 > Federated Search supports only external lookup relationships, where the external object must always be the parent in the relationship.
 
 ## Introduction
 
-The goal of this guide is to enable querying external data hosted in **Apache Solr** using the **OpenSearch** protocol, specifically to integrate with **Salesforce Federated Search** (available in: Enterprise, Professional, Unlimited, and Developer Editions). While this integration is entirely possible, we were surprised—especially as members of the open-source community—by how scarce comprehensive, end-to-end resources are on the topic.
-
-From deploying an Apache Solr server, to configuring the schema, exposing a compliant OpenSearch description, and even writing the required XSL transformation file, the journey involves several steps that are often only partially documented or scattered across different sources.
+The goal of this guide is to enable querying external data hosted in **Apache Solr** using the **OpenSearch** protocol, specifically to integrate with **Salesforce Federated Search**. While this integration is entirely possible, we were surprised—especially as members of the open-source community—by how scarce comprehensive end-to-end resources are on the topic. From deploying an Apache Solr server, to configuring the schema, exposing a compliant OpenSearch description, and even writing the required XSL transformation file, the journey involves several steps that are often only partially documented or scattered across different sources.
 
 This document aims to fill that gap by offering a practical, example-driven walkthrough of the entire process. We hope it serves as a helpful reference for others taking on the same challenge.
 
 As always, we welcome feedback and suggestions—this is a living document, and we’re happy to keep improving it!
 
 ## Deploy your Apache Solr
-The following is not intended as a comprehensive guide to deploying Apache Solr. There are several options available for deploying Solr — from using binaries (for Unix-compatible systems or Windows) to containerized solutions such as Docker and Kubernetes.
-
-Additionally, Solr can operate in different modes, such as a single-node server or a distributed multi-node cluster managed with ZooKeeper.
-
-For more detailed information, we recommend consulting the excellent official [Apache Solr documentation](https://solr.apache.org/resources.html).
+The following is not intended as a comprehensive guide to deploying Apache Solr. There are several options available for deploying Solr — from using binaries (for Unix-compatible systems or Windows) to containerized solutions such as Docker and Kubernetes. Additionally, Solr can operate in different modes, such as a single-node server or a distributed multi-node cluster managed with ZooKeeper. For more detailed information, we recommend consulting the excellent official [Apache Solr documentation](https://solr.apache.org/resources.html).
 
 For the illustrative purposes of this guide, we will use the simplest deployment method: running Apache Solr in Docker as a single-node server.
 
@@ -53,13 +48,13 @@ Once you have Apache Solr up and running, take some time to familiarize yourself
 You should also explore the Solr API and the command-line interface. For a helpful introduction, consider followign the official [Solr tutorial](https://solr.apache.org/guide/solr/latest/getting-started/solr-tutorial.html).
 ## Your data in Apache Solr
 ### Create a Core
-Let’s say you want to create a core called `amazingCore`. Inside the container, run the following command:
+Let’s say you want to create a core (i.e. a collection of document) called `amazingCore`. Inside the container, e.g. `docker exec -it solr_tests-solr-1 /bin/bash`, run the following command:
 ```bash
 solr create -c amazingCore
 ```
 This will create the necessary folder structure for the new core. You can also observe the corresponding folders locally, thanks to the mounted volume that syncs the container’s data with your local filesystem.
 ### Configure the Core
-Now let’s say that each document represents an email message, and we want to store both its content and metadata—such as the message ID, sender, receivers, and subject. Specifically, we want to define: Specifically, we want to define:
+Now, let’s say that each document represents an email message, and we want to store both its content and metadata—such as the message ID, sender, receivers, and subject. Specifically, we want to define:
 + a custom type field called `text_normalized` to perform a case-insensitive full-text search
 + the following fields
     + `email_id`: type `string`, single-valued, retrivable, searchable, and **required** in each document
@@ -75,7 +70,7 @@ To define the following schema, you can use the `curl` command as shown below:
 ```bash
 curl <SOLR_URL>/solr/amaizingCore/schema -H 'Content-type:application/json' -d '<json here!>'
 ```
-with the following json:
+with the following JSON:
 
 ```json
 {
@@ -217,7 +212,7 @@ and the json is like the following
 ```
 
 ### Query the docs
-Let’s say you want to retrieve all documents that contain the word “scientist”. You can do this by sending a request to the following URL: `<SOLR_URL>/solr/amazingCore/query?q=scientist` You can either `curl` this URL or open it directly in your browser. By default, Solr returns the response in JSON format. If you prefer the output in XML, simply add the wt=xml (writer type) parameter like so: `<SOLR_URL>/solr/amazingCore/query?q=scientist&wt=xml`. 
+Let’s say you want to retrieve all documents that contain the word “scientist”. You can do this by sending a request to the following URL: `<SOLR_URL>/solr/amazingCore/query?q=scientist` You can either `curl` this URL or open it directly in your browser. By default, Solr returns the response in JSON format. If you prefer the output in XML, simply add the `wt=xml` (writer type) parameter like so: `<SOLR_URL>/solr/amazingCore/query?q=scientist&wt=xml`. 
 
 Now, Salesforce **Federated Search** to work properly expects as input an XML Atom with the OpenSearch specs/constraints (reference [one](https://help.salesforce.com/s/articleView?id=ai.search_configure_solr_federated_search.htm&type=5) and [two](https://developer.salesforce.com/docs/atlas.en-us.federated_search.meta/federated_search/federated_search_intro.htm)). Therefore, we have to enable the `xslt` query response writer and to configure it. The steps are:
 + modify the `solrconfig.xml` file in `data/amazingCore/conf/solrconfig.xml` adding the following lines
@@ -230,6 +225,7 @@ Now, Salesforce **Federated Search** to work properly expects as input an XML At
 + create the folder `xslt` in the path `data/amazingCore/` and create the following file `atom.xsl`:
     ```xml
     <?xml version="1.0" encoding="UTF-8"?>
+    <!-- XSLT stylesheet to transform a custom XML search response into an Atom feed with OpenSearch and Salesforce-specific metadata -->
     <xsl:stylesheet version="1.0"
         xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
         xmlns:atom="http://www.w3.org/2005/Atom"
@@ -238,7 +234,9 @@ Now, Salesforce **Federated Search** to work properly expects as input an XML At
         xmlns:sfdc="http://salesforce.com/2016/federatedsearch/1.0"
         exclude-result-prefixes="xsl atom opensearch">
 
+        <!-- Output settings: XML with indentation, UTF-8 encoding, and correct media type -->
         <xsl:output method="xml" indent="yes" encoding="UTF-8" media-type="application/xml" />
+        <!-- Strip whitespace-only text nodes from the input to avoid unnecessary spaces -->
         <xsl:strip-space elements="*" />
 
         <xsl:template match="/response">
@@ -246,7 +244,7 @@ Now, Salesforce **Federated Search** to work properly expects as input an XML At
                 xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
                 
                 <title>emailmessage</title>
-                <!-- OpenSearch metadata -->
+                <!-- OpenSearch metadata for pagination and query tracking -->
                 <opensearch:totalResults>
                     <xsl:value-of select="//result/@numFound" />
                 </opensearch:totalResults>
@@ -257,41 +255,54 @@ Now, Salesforce **Federated Search** to work properly expects as input an XML At
                     <xsl:value-of
                         select="//lst[@name='responseHeader']/lst[@name='params']/int[@name='rows']" />
                 </opensearch:itemsPerPage>
+                <!-- OpenSearch query details -->
                 <opensearch:Query role="request">
+                    <!-- Search term -->
                     <xsl:attribute name="searchTerms">
                         <xsl:value-of
                             select="//lst[@name='responseHeader']/lst[@name='params']/str[@name='q']" />
                     </xsl:attribute>
+                    <!-- Index of first item in this page -->
                     <xsl:attribute name="startIndex">
                                 <xsl:value-of select="//result/@start" />
                     </xsl:attribute>
+                    <!-- Number of results returned -->
                     <xsl:attribute name="count">
                         <xsl:value-of
                             select="//result/@numFound" />
                     </xsl:attribute>
                 </opensearch:Query>
 
-                <!-- Atom entries -->
+                <!-- Atom <entry> elements for each result document -->
                 <xsl:for-each select="result/doc">
                     <entry>
+                        <!-- Email subject as the title -->
                         <title>
                             <xsl:value-of select="str[@name='subject']" />
                         </title>
+                        <!-- Custom metadata -->
                         <recordType name="emailmessage" />
+                        <!-- Unique ID for the entry -->
                         <id>
                             <xsl:value-of select="str[@name='id']" />
                         </id>
+                        <!-- Static fake link (could be made dynamic if needed) -->
                         <link href="https://www.example.com" />
+                        <!-- Last updated date -->
                         <updated>
                             <xsl:value-of select="date[@name='date']" />
                         </updated>
+                        <!-- Summary (subject again) -->
                         <summary>
                             <xsl:value-of select="str[@name='subject']" />
                         </summary>
+                        <!-- Salesforce recordType -->
                         <sfdc:recordType>emailmessage</sfdc:recordType>
+                        <!-- Email sender -->
                         <sfdc:sender>
                             <xsl:value-of select="str[@name='sender']" />
                         </sfdc:sender>
+                        <!-- Email recipients (list of) -->
                         <sfdc:receivers>
                             <xsl:for-each select="arr[@name='receivers']/str">
                                 <xsl:value-of select="." />
@@ -299,15 +310,19 @@ Now, Salesforce **Federated Search** to work properly expects as input an XML At
                                 </xsl:if>
                             </xsl:for-each>
                         </sfdc:receivers>
+                        <!-- Email subject -->
                         <sfdc:subject>
                             <xsl:value-of select="str[@name='subject']" />
                         </sfdc:subject>
+                        <!-- Email body -->
                         <sfdc:body>
                             <xsl:value-of select="str[@name='body']" />
                         </sfdc:body>
+                        <!-- Email date -->
                         <sfdc:emaildate>
                             <xsl:value-of select="date[@name='date']" />
                         </sfdc:emaildate>
+                        <!-- Email tags (list of) -->
                         <sfdc:tags>
                             <xsl:for-each select="arr[@name='tags']/str">
                                 <xsl:value-of select="." />
